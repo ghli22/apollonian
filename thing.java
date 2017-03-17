@@ -1,1 +1,0 @@
-a+(c-a)*((c-a)*(c-a)+(d-b)*(d-b)+e*e-f*f)/(2*((c-a)*(c-a)+(d-b)*(d-b)))+(d-b)*Math.sqrt(e*e-((c-a)*(c-a)+(d-b)*(d-b)+e*e-f*f)*((c-a)*(c-a)+(d-b)*(d-b)+e*e-f*f)/(4*((c-a)*(c-a)+(d-b)*(d-b))))/Math.sqrt((c-a)*(c-a)+(d-b)*(d-b))
