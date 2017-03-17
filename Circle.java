@@ -73,7 +73,6 @@ class Circle extends JComponent implements Fractal,Comparable {
 		System.out.printf("C1:(%f,%f)%f\n",c1.cX,c1.cY,c1.r);
 		double theta1 = Math.acos(sDist(c1,c2)/c1.r);
 		double theta2 = Math.atan((c2.cY - c1.cY)/(c2.cX - c1.cX));
-		//System.out.printf("\n%.2f,%.2f\n",Math.toDegrees(theta1),Math.toDegrees(theta2));
 		if (dist(c1,c2) > c1.r + c2.r){
 			throw new Exception();
 		}
@@ -81,9 +80,9 @@ class Circle extends JComponent implements Fractal,Comparable {
 			dd = new double[][] {{c1.cX + c1.r*(c2.cX - c1.cX )/(c1.r + c2.r), c1.cY-c1.r*(c2.cY-c1.cY)/(c1.r+c2.r)}};
 		}
 		else {
-			dd = new double[][] {ptRotation(c1.cX+c1.r*Math.cos(theta1), c1.cY+c1.r*Math.sin(theta2),c1.cX+c1.r*Math.cos(theta1),c1.cY+c1.r*Math.sin(theta2)+c1.r*Math.sin(theta1),theta2),{1,1}};
-			System.out.println(c1.r*Math.sin(theta1));
-			System.out.println("lel");
+			dd = new double[][] {ptRotation(c1.cX+c1.r*Math.cos(theta1), c1.cY+c1.r*Math.sin(theta2),c1.cX+c1.r*Math.cos(theta1),c1.cY+c1.r*Math.sin(theta2)+c1.r*Math.sin(theta1),theta2),
+					     ptRotation(c1.cX+c1.r*Math.cos(theta1), c1.cY+c1.r*Math.sin(theta2),c1.cX+c1.r*Math.cos(theta1),c1.cY+c1.r*Math.sin(theta2)+c1.r*Math.sin(theta1),theta2+Math.PI)
+				};
 		}
 		return dd;
 
@@ -110,22 +109,23 @@ class Circle extends JComponent implements Fractal,Comparable {
 	public static void main(String[] args) throws Exception{
 
 		JFrame test = new JFrame();
+		test.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		test.setLayout(null);
-		test.setSize(600,600);
+		test.setSize(1920,1080);
 		test.setVisible(true);
 		JLayeredPane p = new JLayeredPane();
-		p.setBounds(0,0,600,600);
+		p.setBounds(0,0,1920,1000);
 		p.setLayout(null);
 		test.add(p);
 		test.setVisible(true);
-		Circle c1 = new Circle(300,300,200);
-		Circle c2 = new Circle(220,300,120);
-		Circle c3 = new Circle(420,300,80);
+		Circle c1 = new Circle(900,500,400);
+		Circle c2 = new Circle(740,500,240);
+		Circle c3 = new Circle(1140,500,160);
 		Circle c4 = new Circle(c2,descartes(c1,c2,c3));
 		Circle c5 = new Circle(c3,descartes(c1,c2,c3));
 		double[][] a = intersect(new Circle(c2,descartes(c1,c2,c3)),new Circle(c3,descartes(c1,c2,c3)));
 		Circle c6 = new Circle(a[0][0],a[0][1],descartes(c1,c2,c3));
-		System.out.printf("(%f,%f)",a[0][0],a[0][1]);
+		Circle c7 = new Circle(a[1][0],a[1][1],descartes(c1,c2,c3));
 		JComponent pt = new JComponent(){
 			public void paintComponent(Graphics g){
 				g.setColor(new Color(0,0,0));
@@ -143,6 +143,7 @@ class Circle extends JComponent implements Fractal,Comparable {
 		//p.add(c4);
 		//p.add(c5);
 		p.add(c6);
+		p.add(c7);
 
 
 	}
