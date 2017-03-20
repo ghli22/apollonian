@@ -3,10 +3,11 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
 class Circle extends JComponent implements Fractal,Comparable {
-	private Ellipse2D.Double c; 
+	private Ellipse2D.Double c;
 	private double cX, cY, r;
 	private Rectangle bound;
 	private Color co;
+	private int io;
 	private ArrayList<Fractal> tangentials;
 	Circle(double x, double y, double r){
 		cX = x;
@@ -16,6 +17,7 @@ class Circle extends JComponent implements Fractal,Comparable {
 		bound = new Rectangle((int)cX-safeCeil(r), (int)cY-safeCeil(r), 2*safeCeil(r) +1, 2*safeCeil(r) +1);
 		c = new Ellipse2D.Double(cX - bound.x - r,cY - bound.y - r,2*r,2*r);
 		this.setBounds(bound);
+		io = 1;
 
 	}
 	Circle (Circle c, double r){
@@ -26,6 +28,7 @@ class Circle extends JComponent implements Fractal,Comparable {
 		bound = new Rectangle((int)cX-safeCeil(this.r), (int)cY-safeCeil(this.r), 2*safeCeil(this.r) +1, 2*safeCeil(this.r) +1);
 		this.c = new Ellipse2D.Double(cX - bound.x - this.r,cY - bound.y - this.r,2*this.r,2*this.r);
 		this.setBounds(bound);
+		io = 1;
 
 	}
 	private int safeCeil(double d){
@@ -57,16 +60,19 @@ class Circle extends JComponent implements Fractal,Comparable {
 		c = new Ellipse2D.Double(cX - bound.x - r ,cY - bound.y - r, 2*r,2*r);
 		this.setBounds(bound);
 	}
+	public void setIo(int io){
+		this.io = io;
+	}
 	public void recurse() {}
 	public static double descartes(Circle c1, Circle c2, Circle c3) {
 		Circle[] temp = {c1,c2,c3};
 		Arrays.sort(temp);
-		double k1 = 1/temp[0].r;
-		double k2 = 1/temp[1].r;
-		double k3 = -1/temp[2].r;
+		double k1 = c1.io/temp[0].r;
+		double k2 = c2.io/temp[1].r;
+		double k3 = c3.io/temp[2].r;
 		double k4 = k1 + k2 + k3 + 2*Math.sqrt(Math.abs(k1*k2 + k1*k3 + k2*k3));
 		return 1/k4;
-		
+
 	}
 	public static double[][] intersect(Circle c1, Circle c2) throws Exception{
 		double[][] dd;
@@ -88,6 +94,33 @@ class Circle extends JComponent implements Fractal,Comparable {
 
 
 	}
+	public String toString(){
+		return String.format("(%.2f,%.2f),%.2f"
+	}
+	public static double[][] intersect(Circle c1, Circle c2, Circle c3) throws Exception {
+		ArrayList<Circle> cs = new ArrayList<Circle>(){{
+			this.add(c1);
+			this.add(c2);
+			this.add(c3);
+		}};
+		for (int i = 0; i < 3; ++i)
+			if (cs.get(i).io < 0)
+				cs.set(i,cs.set(0,cs.get(i)));
+
+		double[][] dd = intersect(cs.get(1),cs.get(2));
+		if (dd.length == 2)
+			if (Math.abs(cPtDist(dd[0][0],dd[0][1],cs.get(0)) - cs.get(0).r) <= .001)
+				if( Math.abs(cPtDist(dd[0][0],dd[0][1],cs.get(0)) - cs.get(0).r) <= .001)
+					return dd;
+				else
+					return new double[][] {dd[0]};
+			else
+				return new double[][] {dd[1]};
+		else //(dd.length)
+			return dd;
+
+
+	}
 	public static double sDist(Circle c1, Circle c2){
 		double temp = (Math.pow(c1.r,2) - Math.pow(c2.r,2) + Math.pow(dist(c1,c2),2) )/ (2*(dist(c1,c2)));
 		return temp;
@@ -104,8 +137,10 @@ class Circle extends JComponent implements Fractal,Comparable {
 	}
 	public static double dist(Circle c1, Circle c2){
 		return Math.sqrt(Math.pow(c1.cX - c2.cX,2) + Math.pow(c1.cY - c2.cY,2));
-	}	
-
+	}
+	public static double dist(Point p1, Point p2){
+		return Math.sqrt(Math.pow(p1.x - p2.x,2) + Math.pow(p1.y - p2.y,2));
+	}
 	public static void main(String[] args) throws Exception{
 
 		JFrame test = new JFrame();
@@ -123,9 +158,9 @@ class Circle extends JComponent implements Fractal,Comparable {
 		Circle c3 = new Circle(1140,500,160);
 		Circle c4 = new Circle(c2,descartes(c1,c2,c3));
 		Circle c5 = new Circle(c3,descartes(c1,c2,c3));
-		double[][] a = intersect(new Circle(c2,descartes(c1,c2,c3)),new Circle(c3,descartes(c1,c2,c3)));
 		Circle c6 = new Circle(a[0][0],a[0][1],descartes(c1,c2,c3));
-		Circle c7 = new Circle(a[1][0],a[1][1],descartes(c1,c2,c3));
+		//Circle c7 = new Circle(a[1][0],a[1][1],descartes(c1,c2,c3));
+		//Circle c7 = new Circle(
 		JComponent pt = new JComponent(){
 			public void paintComponent(Graphics g){
 				g.setColor(new Color(0,0,0));
@@ -143,7 +178,7 @@ class Circle extends JComponent implements Fractal,Comparable {
 		//p.add(c4);
 		//p.add(c5);
 		p.add(c6);
-		p.add(c7);
+		//p.add(c7);
 
 
 	}
