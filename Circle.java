@@ -2,29 +2,46 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
-class Circle extends JComponent implements Fractal,Comparable {
+class Circle extends JComponent implements Fractal,Comparable<Circle> {
 	private Ellipse2D.Double c; 
-	private double cX, cY, r;
+	double r,x,y;
+	Point p;
+	int io = 1;
 	private Rectangle bound;
 	private Color co;
 	private ArrayList<Fractal> tangentials;
+	public void setIo(int i){
+		io = i;
+	}
 	Circle(double x, double y, double r){
-		cX = x;
-		cY = y;
+		this.x = x;
+		this.y = y;
 		this.r = r;
+		p = new Point(x,y);
 		co = new Color(0,0,0);
-		bound = new Rectangle((int)cX-safeCeil(r), (int)cY-safeCeil(r), 2*safeCeil(r) +1, 2*safeCeil(r) +1);
-		c = new Ellipse2D.Double(cX - bound.x - r,cY - bound.y - r,2*r,2*r);
+		bound = new Rectangle((int)x-safeCeil(r), (int)y-safeCeil(r), 2*safeCeil(r) +1, 2*safeCeil(r) +1);
+		c = new Ellipse2D.Double(x - bound.x - r,y - bound.y - r,2*r,2*r);
 		this.setBounds(bound);
 
 	}
+	public Circle(Point p, double r){
+		this.p = p;
+		x = p.x;
+		y = p.y;
+		this.r = r;
+		co = new Color(0,0,0);
+		bound = new Rectangle((int)x-safeCeil(r), (int)y-safeCeil(r), 2*safeCeil(r) +1, 2*safeCeil(r) +1);
+		c = new Ellipse2D.Double(x - bound.x - r,y - bound.y - r,2*r,2*r);
+		this.setBounds(bound);
+	}
 	Circle (Circle c, double r){
-		cX = c.cX;
-		cY = c.cY;
-		this.r = c.r + r;
+		x = c.x;
+		y = c.y;
+		this.r = c.r + c.io*r;
 		co = c.co;
-		bound = new Rectangle((int)cX-safeCeil(this.r), (int)cY-safeCeil(this.r), 2*safeCeil(this.r) +1, 2*safeCeil(this.r) +1);
-		this.c = new Ellipse2D.Double(cX - bound.x - this.r,cY - bound.y - this.r,2*this.r,2*this.r);
+		p = c.p;
+		bound = new Rectangle((int)x-safeCeil(this.r), (int)y-safeCeil(this.r), 2*safeCeil(this.r) +1, 2*safeCeil(this.r) +1);
+		this.c = new Ellipse2D.Double(x - bound.x - this.r,y - bound.y - this.r,2*this.r,2*this.r);
 		this.setBounds(bound);
 
 	}
@@ -38,15 +55,15 @@ class Circle extends JComponent implements Fractal,Comparable {
 		g2.draw(c);
 	}
 	public void setX(double x){
-		cX = x;
+		x = x;
 		bound.x = (int) x - safeCeil(r);
-		c = new Ellipse2D.Double(cX - bound.x - r,cY - bound.y - r,2*r,2*r);
+		c = new Ellipse2D.Double(x - bound.x - r,y - bound.y - r,2*r,2*r);
 		this.setBounds(bound);
 	}
 	public void setY(double y){
-		cY = y;
+		y = y;
 		bound.y = (int) y - safeCeil(r);
-		c = new Ellipse2D.Double(cX - bound.x - r,cY - bound.y - r, 2*r, 2*r);
+		c = new Ellipse2D.Double(x - bound.x - r,y - bound.y - r, 2*r, 2*r);
 		this.setBounds(bound);
 	}
 
@@ -54,57 +71,60 @@ class Circle extends JComponent implements Fractal,Comparable {
 		this.r = r;
 		bound.width = 2* (int) r +1;
 		bound.height = bound.width;
-		c = new Ellipse2D.Double(cX - bound.x - r ,cY - bound.y - r, 2*r,2*r);
+		c = new Ellipse2D.Double(x - bound.x - r ,y - bound.y - r, 2*r,2*r);
 		this.setBounds(bound);
 	}
 	public void recurse() {}
 	public static double descartes(Circle c1, Circle c2, Circle c3) {
-		Circle[] temp = {c1,c2,c3};
-		Arrays.sort(temp);
-		double k1 = 1/temp[0].r;
-		double k2 = 1/temp[1].r;
-		double k3 = -1/temp[2].r;
+		//Circle[] temp = {c1,c2,c3};
+		//Arrays.sort(temp);
+		double k1 = c1.io/c1.r;
+		double k2 = c2.io/c2.r;
+		double k3 = c3.io/c3.r;
 		double k4 = k1 + k2 + k3 + 2*Math.sqrt(Math.abs(k1*k2 + k1*k3 + k2*k3));
 		return 1/k4;
 		
 	}
-	public static double[][] intersect(Circle c1, Circle c2) throws Exception{
-		double[][] dd;
-		System.out.printf("C1:(%f,%f)%f\n",c1.cX,c1.cY,c1.r);
-		double theta1 = Math.acos(sDist(c1,c2)/c1.r);
-		double theta2 = Math.atan((c2.cY - c1.cY)/(c2.cX - c1.cX));
-		if (dist(c1,c2) > c1.r + c2.r){
-			throw new Exception();
-		}
-		else if(Math.abs(dist(c1,c2) - (c1.r + c2.r)) <= .01){
-			dd = new double[][] {{c1.cX + c1.r*(c2.cX - c1.cX )/(c1.r + c2.r), c1.cY-c1.r*(c2.cY-c1.cY)/(c1.r+c2.r)}};
-		}
-		else {
-			dd = new double[][] {ptRotation(c1.cX+c1.r*Math.cos(theta1), c1.cY+c1.r*Math.sin(theta2),c1.cX+c1.r*Math.cos(theta1),c1.cY+c1.r*Math.sin(theta2)+c1.r*Math.sin(theta1),theta2),
-					     ptRotation(c1.cX+c1.r*Math.cos(theta1), c1.cY+c1.r*Math.sin(theta2),c1.cX+c1.r*Math.cos(theta1),c1.cY+c1.r*Math.sin(theta2)+c1.r*Math.sin(theta1),theta2+Math.PI)
-				};
-		}
-		return dd;
-
-
-	}
-	public static double sDist(Circle c1, Circle c2){
-		double temp = (Math.pow(c1.r,2) - Math.pow(c2.r,2) + Math.pow(dist(c1,c2),2) )/ (2*(dist(c1,c2)));
-		return temp;
-
-	}
-	public static double[] ptRotation(double xo ,double yo ,double xp ,double yp, double theta){
-		return new double[] {Math.cos(theta) * (xp - xo) - Math.sin(theta) * (yp - yo) + xo, Math.sin(theta) * (xp - xo) + Math.cos(theta) * (yp - yo) + yo};
-
-	}
-	public int compareTo(Object o){
-		Circle c = (Circle) o;
+	
+	public int compareTo(Circle c){
 		return (int) this.r - (int) c.r;
 
 	}
-	public static double dist(Circle c1, Circle c2){
-		return Math.sqrt(Math.pow(c1.cX - c2.cX,2) + Math.pow(c1.cY - c2.cY,2));
-	}	
+	public static Point[] trilat(Circle c1, Circle c2, Circle c3) {
+		ArrayList<Point> wp = new ArrayList<Point>();
+		Point[] pts = intersect(c1,c2);
+		for (Point p : pts){
+			if (Math.abs(dist(c3.p,p) - c3.r) <= .001)
+				wp.add(p);
+		}
+		pts = new Point[wp.size()];
+		return wp.toArray(pts);
+
+	}
+	public static Point[] intersect(Circle c1, Circle c2){
+		ArrayList<Point> pts = new ArrayList<Point>();
+		if (dist(c1,c2) > c1.r + c2.r);
+		else if(Math.abs(dist(c1,c2) - (c1.r + c2.r)) <= .001)
+			pts.add(new Point(c1.x + c1.r*(c2.x - c1.x)/(c1.r + c2.r),
+					  c1.y - c1.r*(c2.y - c1.y)/(c1.r + c2.r)));
+		else{ 
+			pts.add(new Point(.5*(c2.x+c1.x)+.5*(c2.x-c1.x)*(Math.pow(c1.r,2)-Math.pow(c2.r,2))/Math.pow(dist(c1,c2),2)+2*(c2.y-c1.y)*(.25*Math.sqrt((dist(c1,c2)+c1.r+c2.r)*(-dist(c1,c2)+c1.r+c2.r)*(dist(c1,c2)-c1.r+c2.r)*(dist(c1,c2)+c1.r-c2.r)))/Math.pow(dist(c1,c2),2),
+					  .5*(c2.y+c1.y)+.5*(c2.y-c1.y)*(Math.pow(c1.r,2)-Math.pow(c2.r,2))/Math.pow(dist(c1,c2),2)-2*(c2.x-c1.x)*(.25*Math.sqrt((dist(c1,c2)+c1.r+c2.r)*(-dist(c1,c2)+c1.r+c2.r)*(dist(c1,c2)-c1.r+c2.r)*(dist(c1,c2)+c1.r-c2.r)))/Math.pow(dist(c1,c2),2)));
+			pts.add(new Point(.5*(c2.x+c1.x)+.5*(c2.x-c1.x)*(Math.pow(c1.r,2)-Math.pow(c2.r,2))/Math.pow(dist(c1,c2),2)-2*(c2.y-c1.y)*(.25*Math.sqrt((dist(c1,c2)+c1.r+c2.r)*(-dist(c1,c2)+c1.r+c2.r)*(dist(c1,c2)-c1.r+c2.r)*(dist(c1,c2)+c1.r-c2.r)))/Math.pow(dist(c1,c2),2),
+					  .5*(c2.y+c1.y)+.5*(c2.y-c1.y)*(Math.pow(c1.r,2)-Math.pow(c2.r,2))/Math.pow(dist(c1,c2),2)+2*(c2.x-c1.x)*(.25*Math.sqrt((dist(c1,c2)+c1.r+c2.r)*(-dist(c1,c2)+c1.r+c2.r)*(dist(c1,c2)-c1.r+c2.r)*(dist(c1,c2)+c1.r-c2.r)))/Math.pow(dist(c1,c2),2)));
+
+		}
+		Point[] pa = new Point[pts.size()];
+		if (pts.lastIndexOf(pts.get(0)) != 0)
+			pts.remove(0);
+		return pts.toArray(pa);
+	}
+	public static double dist (Point p1, Point p2){
+		return Math.sqrt(Math.pow(p1.x - p2.x,2) + Math.pow(p1.y - p2.y,2));
+	}
+	public static double dist (Circle c1, Circle c2){
+		return dist(c1.p, c2.p);
+	}
 
 	public static void main(String[] args) throws Exception{
 
@@ -121,11 +141,11 @@ class Circle extends JComponent implements Fractal,Comparable {
 		Circle c1 = new Circle(900,500,400);
 		Circle c2 = new Circle(740,500,240);
 		Circle c3 = new Circle(1140,500,160);
-		Circle c4 = new Circle(c2,descartes(c1,c2,c3));
-		Circle c5 = new Circle(c3,descartes(c1,c2,c3));
-		double[][] a = intersect(new Circle(c2,descartes(c1,c2,c3)),new Circle(c3,descartes(c1,c2,c3)));
-		Circle c6 = new Circle(a[0][0],a[0][1],descartes(c1,c2,c3));
-		Circle c7 = new Circle(a[1][0],a[1][1],descartes(c1,c2,c3));
+		c1.setIo(-1);
+		double newR = descartes(c1,c2,c3);
+		Point[] a = trilat(new Circle(c1,newR),new Circle(c2,newR),new Circle(c3,newR));
+		Circle c6 = new Circle(a[1],descartes(c1,c2,c3));
+		Circle c7 = new Circle(a[0],descartes(c1,c2,c3));
 		JComponent pt = new JComponent(){
 			public void paintComponent(Graphics g){
 				g.setColor(new Color(0,0,0));
