@@ -162,7 +162,7 @@ class Circle extends JComponent implements Fractal,Comparable<Circle> {
 		p.add(c3);
 		//p.add(c4);
 		//p.add(c5);
-		p.add(c6);
+		fp.add(c6);
 		p.add(c7);
 
 
